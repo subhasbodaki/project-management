@@ -6,3 +6,9 @@ CREATE TABLE projects (
     end_date TEXT NOT NULL,
     active BOOLEAN NOT NULL 
 );
+
+CREATE TABLE users (
+    userid serial PRIMARY KEY,
+    name TEXT NOT NULL,
+    password TEXT NOT NULL
+)

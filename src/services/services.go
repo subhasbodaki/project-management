@@ -2,10 +2,10 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/subhasbodaki/project_mgmt/db"
 	"github.com/subhasbodaki/project_mgmt/postgres"
 )
 
@@ -17,27 +17,26 @@ type Project struct {
 	Active      bool   `json:Active`
 }
 
-func dbconn() *postgres.Queries {
-	conn, err := sql.Open("postgres", "postgresql://postgres:password@localhost:5432/project_management")
+// func dbconn() *postgres.Queries {
+// 	conn, err := sql.Open("postgres", "postgresql://postgres:password@localhost:5432/project_management")
 
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	db := postgres.New(conn)
+// 	db := postgres.New(conn)
 
-	return db
-}
+// 	return db
+// }
 
 func CreateProject(c *fiber.Ctx) error {
-	db := dbconn()
 	p := new(Project)
 
 	if err := c.BodyParser(p); err != nil {
 		return err
 	}
 
-	project, err := db.CreateProject(context.Background(), postgres.CreateProjectParams{
+	project, err := db.DB.CreateProject(context.Background(), postgres.CreateProjectParams{
 		Name:        p.Name,
 		Description: p.Description,
 		StartDate:   p.StartDate,
@@ -53,9 +52,7 @@ func CreateProject(c *fiber.Ctx) error {
 }
 
 func GetProjects(c *fiber.Ctx) error {
-	db := dbconn()
-
-	project, err := db.GetProjects(context.Background())
+	project, err := db.DB.GetProjects(context.Background())
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Unable to process request",
@@ -66,13 +63,12 @@ func GetProjects(c *fiber.Ctx) error {
 }
 
 func GetProjectsById(c *fiber.Ctx) error {
-	db := dbconn()
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	project, err := db.GetProjectById(context.Background(), int32(id))
+	project, err := db.DB.GetProjectById(context.Background(), int32(id))
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"message": "Project Not Found",
@@ -82,7 +78,6 @@ func GetProjectsById(c *fiber.Ctx) error {
 }
 
 func UpdateProjectById(c *fiber.Ctx) error {
-	db := dbconn()
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		log.Fatal(err)
@@ -93,7 +88,7 @@ func UpdateProjectById(c *fiber.Ctx) error {
 		return err
 	}
 
-	project, err := db.UpdateProjectById(context.Background(), postgres.UpdateProjectByIdParams{
+	project, err := db.DB.UpdateProjectById(context.Background(), postgres.UpdateProjectByIdParams{
 		ID:     int32(id),
 		Active: p.Active,
 	})
@@ -107,13 +102,12 @@ func UpdateProjectById(c *fiber.Ctx) error {
 }
 
 func DeleteProjectById(c *fiber.Ctx) error {
-	db := dbconn()
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = db.DeleteProjectById(context.Background(), int32(id))
+	err = db.DB.DeleteProjectById(context.Background(), int32(id))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Project Not Found..!",

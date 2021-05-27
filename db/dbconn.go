@@ -1,4 +1,4 @@
-package sqldb
+package db
 
 import (
 	"database/sql"
@@ -7,14 +7,14 @@ import (
 	"github.com/subhasbodaki/project_mgmt/postgres"
 )
 
-func dbconn() *postgres.Queries {
+var DB *postgres.Queries
+
+func DBConn() {
 	conn, err := sql.Open("postgres", "postgresql://postgres:password@localhost:5432/project_management")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	db := postgres.New(conn)
-
-	return db
+	DB = postgres.New(conn)
 }
