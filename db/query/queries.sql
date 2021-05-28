@@ -18,3 +18,10 @@ WHERE id = $1 RETURNING *;
 DELETE FROM projects
 WHERE id = $1;
 
+-- name: CreateUser :one
+INSERT INTO users (name, email ,password)
+VALUES ($1, $2, $3) RETURNING *;
+
+-- name: GetEmail :one
+SELECT email, password FROM users
+WHERE email = $1 LIMIT 1;

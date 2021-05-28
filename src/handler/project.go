@@ -1,4 +1,4 @@
-package services
+package handler
 
 import (
 	"context"
@@ -10,30 +10,49 @@ import (
 )
 
 type Project struct {
-	Name        string `json:name`
-	Description string `json:Description`
-	StartDate   string `json:StartDate`
-	EndDate     string `json:EndDate`
-	Active      bool   `json:Active`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	StartDate   string `json:"startdate"`
+	EndDate     string `json:"enddate"`
+	Active      bool   `json:"active"`
 }
 
-// func dbconn() *postgres.Queries {
-// 	conn, err := sql.Open("postgres", "postgresql://postgres:password@localhost:5432/project_management")
+type User struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
 
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+func ResgisterUser(c *fiber.Ctx) error {
+	var u User
 
-// 	db := postgres.New(conn)
+	if err := c.BodyParser(&u); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Unable to parse..!",
+		})
+	}
 
-// 	return db
-// }
+	user, err := db.DB.CreateUser(context.Background(), postgres.CreateUserParams{
+		Name:     u.Name,
+		Email:    u.Email,
+		Password: u.Password,
+	})
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Unable to register user..!",
+		})
+	}
+	return c.Status(fiber.StatusCreated).JSON(user)
+}
 
 func CreateProject(c *fiber.Ctx) error {
 	p := new(Project)
 
 	if err := c.BodyParser(p); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Unable to parse",
+		})
 	}
 
 	project, err := db.DB.CreateProject(context.Background(), postgres.CreateProjectParams{

@@ -12,3 +12,10 @@ type Project struct {
 	EndDate     string `json:"end_date"`
 	Active      bool   `json:"active"`
 }
+
+type User struct {
+	Userid   int32  `json:"userid"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}

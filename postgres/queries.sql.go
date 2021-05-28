@@ -40,6 +40,29 @@ func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (P
 	return i, err
 }
 
+const createUser = `-- name: CreateUser :one
+INSERT INTO users (name, email ,password)
+VALUES ($1, $2, $3) RETURNING userid, name, email, password
+`
+
+type CreateUserParams struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, createUser, arg.Name, arg.Email, arg.Password)
+	var i User
+	err := row.Scan(
+		&i.Userid,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+	)
+	return i, err
+}
+
 const deleteProjectById = `-- name: DeleteProjectById :exec
 DELETE FROM projects
 WHERE id = $1
@@ -48,6 +71,23 @@ WHERE id = $1
 func (q *Queries) DeleteProjectById(ctx context.Context, id int32) error {
 	_, err := q.db.ExecContext(ctx, deleteProjectById, id)
 	return err
+}
+
+const getEmail = `-- name: GetEmail :one
+SELECT email, password FROM users
+WHERE email = $1 LIMIT 1
+`
+
+type GetEmailRow struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) GetEmail(ctx context.Context, email string) (GetEmailRow, error) {
+	row := q.db.QueryRowContext(ctx, getEmail, email)
+	var i GetEmailRow
+	err := row.Scan(&i.Email, &i.Password)
+	return i, err
 }
 
 const getProjectById = `-- name: GetProjectById :one
